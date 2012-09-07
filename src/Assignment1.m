@@ -29,7 +29,58 @@ scatter( train(p+1:2*p,1), train(p+1:2*p,2), 'b' )
 hold off;
 
 %% Train a knn-classifier
-neighbors = 2;
+neighbors = 5;
 NET = knn( 2, 2, neighbors, train, train_labels );
 
-%%
+%% Evaluate the classifier
+Y = knnfwd( NET, test );
+
+[C,Rate] = confmat( Y, test_labels )
+
+%% Loop to make a graph
+Rates = zeros(1,20);
+
+for i = 1 : 400,
+    NET = knn( 2, 2, i, train, train_labels );
+    Y = knnfwd( NET, test );
+    [C,Rate] = confmat( Y, test_labels );
+    Rates(i) = 1.0 - Rate(1) / 100.0;
+end
+
+plot( Rates )
+
+%% Cross-validation
+folds = 10;
+indices = crossvalind('Kfold', 2*p, folds );
+best = zeros(folds,1);
+
+for i = 1:folds,
+    % Create instances
+    test_indices = (indices == i);
+    train_indices = ~test_indices; 
+    
+    % Temporary dataset, excluding the current validation set
+    temp_train = train( train_indices, : ); 
+    temp_labels = train_labels( train_indices, : );
+    
+    % Validation set and labels
+    validation = train( test_indices, : );
+    validation_labels = train_labels( test_indices, : );
+    
+    % Set parameters
+    max_k = 100;
+    Rates = zeros(1,max_k);
+    
+    % Calculate the different error rates for k
+    for j = 1:max_k,
+        NET = knn( 2, 2, j, temp_train, temp_labels );
+        Y = knnfwd( NET, validation );
+        
+        [C,Rate] = confmat( Y, validation_labels );
+        Rates(j) = 1.0 - Rate(1) / 100.0;
+    end
+    
+    % Find the best value for k
+    current_best = find( Rates == min( Rates ) );
+    best(i) = current_best(1);
+end
