@@ -69,9 +69,9 @@ for i = 1:folds,
     validation_labels = train_labels( test_indices, : );
     
     % Set parameters
-    max_k = 500;
-    Rates = zeros(1,max_k);
-    stepsize = 5;
+    max_k = 100;
+    Rates = zeros( 1, max_k/stepsize );
+    stepsize = 2;
     
     % Calculate the different error rates for k
     for j = 1:max_k/stepsize,
