@@ -39,9 +39,10 @@ Y = knnfwd( NET, test );
 
 %% Loop to make a graph
 Rates = zeros(1,20);
-
-for i = 1 : 400,
-    NET = knn( 2, 2, i, train, train_labels );
+max_k = 1500;
+stepsize = 5;
+for i = 1 : max_k/stepsize,
+    NET = knn( 2, 2, (i-1)*stepsize, train, train_labels );
     Y = knnfwd( NET, test );
     [C,Rate] = confmat( Y, test_labels );
     Rates(i) = 1.0 - Rate(1) / 100.0;
@@ -68,12 +69,13 @@ for i = 1:folds,
     validation_labels = train_labels( test_indices, : );
     
     % Set parameters
-    max_k = 100;
+    max_k = 500;
     Rates = zeros(1,max_k);
+    stepsize = 5;
     
     % Calculate the different error rates for k
-    for j = 1:max_k,
-        NET = knn( 2, 2, j, temp_train, temp_labels );
+    for j = 1:max_k/stepsize,
+        NET = knn( 2, 2, (j-1)*stepsize, temp_train, temp_labels );
         Y = knnfwd( NET, validation );
         
         [C,Rate] = confmat( Y, validation_labels );
@@ -82,5 +84,5 @@ for i = 1:folds,
     
     % Find the best value for k
     current_best = find( Rates == min( Rates ) );
-    best(i) = current_best(1);
+    best(i) = (current_best(1) - 1) * stepsize;
 end
