@@ -24,8 +24,8 @@ test_labels = [ repmat( [1 0], N - p, 1 ); repmat( [0 1], N - p, 1 ) ];
 
 %% Plot data in train set
 hold on;
-scatter( train(1:p,1), train(1:p,2), 'r' )
-scatter( train(p+1:2*p,1), train(p+1:2*p,2), 'b' )
+scatter( train(1:p,1), train(1:p,2), 'p', 'r' )
+scatter( train(p+1:2*p,1), train(p+1:2*p,2), '*','b' )
 hold off;
 
 %% Train a knn-classifier
@@ -69,9 +69,9 @@ for i = 1:folds,
     validation_labels = train_labels( test_indices, : );
     
     % Set parameters
-    max_k = 100;
+    max_k = 500;
     Rates = zeros( 1, max_k/stepsize );
-    stepsize = 2;
+    stepsize = 5;
     
     % Calculate the different error rates for k
     for j = 1:max_k/stepsize,
