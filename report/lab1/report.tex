@@ -63,7 +63,8 @@ In figure \ref{error_rate} a graph is shown of the test error evolving as a func
 \caption{Graph of the error rate with various K}
 \label{error_rate}
 \end{figure}\\
-From this single experiment we cannot conclude a specific value of $k$, because it could be the case that the trainings data is not a suitable representation of the overall dataset. However, if a value has to be chosen we would consider using a statistical method like the P test to consider the answer. This answer would be around $k = 100$.
+From this single experiment we cannot extract a specific value of $k$, because it could be the case that the data used for training is not representative of the total distribution. 
+If we must decide on a value for $k$, given these results, we would choose something between 100 and 250, because in the graph there is clearly a low plateau. In order to determine which value in the range 200-250, statistical measures like the P-test can be employed. This way we can check statistically which values lie on this minimal plateau. Then we will want to choose the highest value for $k$ that statistically still lies on that plateau. This way we generalize the most, while keeping the best performance. By looking at the graph, we guess this $k$ is 240.
 
 \section{Cross Validation}
 The advantage of using a evaluation method like cross-validation and bootstrapping is that this method evaluates how well a hypothesis of the classifier performs on predicting new data.
