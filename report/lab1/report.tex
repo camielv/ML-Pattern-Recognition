@@ -56,16 +56,17 @@ The error rate and other statistical measures of the classifier are presented in
 \hline
 \end{tabular}
 \end{center}
-
+In figure \ref{error_rate} a graph is shown of the test error evolving as a function of k. Notice that test error increases when $k$ is growing, this is caused by overfitting on the training set. Furthermore, it can be noticed that the function is fluctuating, which is caused by the noise of the classifier.
 \begin{figure}[!ht]
 \centering
 \includegraphics[width=0.75\textwidth]{images/error_rate_1500_1.pdf}
 \caption{Graph of the error rate with various K}
-\label{graph}
-\end{figure}
-
+\label{error_rate}
+\end{figure}\\
+From this single experiment we cannot conclude a specific value of $k$, because it could be the case that the trainings data is not a suitable representation of the overall dataset. However, if a value has to be chosen we would consider using a statistical method like the P test to consider the answer. This answer would be around $k = 100$.
 
 \section{Cross Validation}
+The advantage of using a evaluation method like cross-validation and bootstrapping is that this method evaluates how well a hypothesis of the classifier performs on predicting new data.
 
-
+A validation set is a portion of the dataset used to asses the performance of prediction or classification models that have been fit on a separate set, training data, of the dataset. The validation set is used as a more objective measure of performance of various models that have been fit on the training data as validating the performance with the training set is not likely to be a good guide to the performance of the models on new data.
 \end{document}
