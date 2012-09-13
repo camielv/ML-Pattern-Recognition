@@ -36,7 +36,7 @@ In this lab assignment, a kNN classifier, with $k = 1$, is trained on the traini
 \hline
 \end{tabular}
 \end{center}
-From the confusion matrix the error rate is computed by the following formula:
+From the confusion matrix the error rate is computed by the complement of the accuracy, presented in the following formula:
 \begin{equation}
 \textit{Error} = 1 - \textit{accuracy} = 1 - \frac{\textit{tp} + \textit{fp}}{\textit{tp} + \textit{tn} + \textit{fp} + \textit{fn}}
 \end{equation}
@@ -64,7 +64,7 @@ In figure \ref{error_rate}, a graph is shown of the test error evolving as a fun
 \label{error_rate}
 \end{figure}\\
 From this single experiment we \textbf{cannot extract a specific value of $k$}, because it could be the case that the data used for training \textbf{is not representative of the total distribution.} 
-If we must decide on a value for $k$, given these results, we would choose something between 100 and 250, because in the graph there is clearly a low plateau. In order to determine which value in the range 100-250, statistical measures like the \textbf{P-test} can be employed. This way we can check statistically which values lie on this minimal plateau. Then we will want to choose the highest value for $k$ that statistically still lies on that plateau. This way we generalize the most, while keeping the best performance. By looking at the graph, we guess this $k$ is 240.
+If we must decide on a value for $k$, given these results, we would choose something between 100 and 250, because in the graph there is clearly a low plateau. In order to determine which value in the range 100-250, statistical measures like the \textbf{P-test} can be employed. This way we can check statistically which values lie on this minimal plateau. Then we will want to choose the highest value for $k$ that statistically still lies on that plateau. This way we \textbf{generalize the most}, while \textbf{keeping the best performance}. By looking at the graph, we guess this $k$ is 240.
 
 \section{Cross Validation}
 The advantage of using evaluation methods like cross-validation and bootstrapping, is that these methods evaluate \textbf{how well} a hypothesis of \textbf{the classifier performs on predicting new data.} Both bootstrapping and cross-validation \textbf{prevent overfitting} caused by a poorly distributed training set. By taking the average hypothesis over a variety of training sets.
@@ -110,7 +110,7 @@ Thus if its assumed that the real error function is smooth and does not have wei
 
 Cross-validation is useful, because when employed \textbf{all the training data can be used} to actually train the model. Whereas in the conventional way, you have to keep a part of the training data apart, to evaluate your model. Moreover, cross-validation \textbf{counteracts overfitting.} By leaving parts of the training data out, the model tries to fit itself to less data, which increases the probability of overfitting. However, because the model is averaged over multiple training sessions (on different training sets), this effect will disappear.
 
-The test error is computed by the formula presented in section 2, which is $Error = 1 - accuracy$. This is an estimate of the inaccuracy of the statistical model.
+The test error is computed by the complement of the accuracy presented in section 2, which is $Error = 1 - accuracy$. This is an estimate of the inaccuracy of the statistical model.
 
 A validation set is a portion of the dataset used \textbf{to asses the performance of prediction or classification models} that have been fit on a separate set, training data, of the dataset. The validation set is used as a \textbf{more objective measure} of performance of various models that have been fit on the training data as validating the performance with the training set is not likely to be a good guide to the performance of the models on new data. 
 \end{document}
