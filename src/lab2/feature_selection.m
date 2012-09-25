@@ -96,7 +96,7 @@ for k = 1:max_k,
     C = zeros(2,2);
 
     for i = 3:SIZE_HAM
-        probe = [ DIR_HAM '/' FILES_HAM(i).name];
+        probe = [ DIR_HAM filesep FILES_HAM(i).name];
         result = presentre( probe , features );
 
         p_ham = 0.7;
@@ -118,7 +118,7 @@ for k = 1:max_k,
     end
 
     for i = 3:SIZE_SPAM
-        probe = [ DIR_SPAM '/' FILES_SPAM(i).name];
+        probe = [ DIR_SPAM filesep FILES_SPAM(i).name];
         result = presentre( probe , features );
         
         p_ham = 0.7;
