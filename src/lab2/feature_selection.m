@@ -150,3 +150,11 @@ for i= 1:max_k,
     M = C_array{i};
     plot_cell{i} = M(1,1) + M(2,2);
 end
+
+%%
+x = 0:0.05:1;
+y = 0:0.05:1;
+[X,Y] = meshgrid(x,y);
+%Z = 1 ./ ( 1 - abs( X - Y ) );
+Z = abs( X - Y );
+surf( X, Y, Z );
