@@ -1,6 +1,6 @@
 %% Loading in train data.
-spam_train_dir = strcat( pwd, '\spam\train\');
-ham_train_dir = strcat( pwd, '\ham\train\');
+spam_train_dir = [ pwd filesep 'spam' filesep 'train' filesep ];
+ham_train_dir = [ pwd filesep 'ham' filesep 'train' filesep ];
 
 % Files from training set
 spam_train_files = dir( spam_train_dir );
@@ -83,8 +83,8 @@ for i = 3:SIZE_HAM
     probe = [ DIR_HAM '/' FILES_HAM(i).name];
     result = presentre( probe , features );
     
-    for i = 1:num_features
-        if ~result( i )
+    for j = 1:num_features
+        if ~result( j )
             continue
         end
         p_spam = p_spam + array{word_index,5};
@@ -103,8 +103,8 @@ for i = 3:SIZE_SPAM
     probe = [ DIR_SPAM '/' FILES_SPAM(i).name];
     result = presentre( probe , features );
     
-    for i = 1:num_features
-        if ~result( i )
+    for j = 1:num_features
+        if ~result( j )
             continue
         end
         p_spam = p_spam + array{word_index,5};
