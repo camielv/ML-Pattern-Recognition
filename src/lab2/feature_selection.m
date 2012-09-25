@@ -71,6 +71,9 @@ FILES_SPAM   = dir( DIR_SPAM );
 SIZE_HAM     = size( FILES_HAM,  1 );
 SIZE_SPAM    = size( FILES_SPAM, 1 );
 
+P_SPAM_INITIAL = 0.3;
+P_HAM_INITIAL = 0.7;
+
 % Sort to selection criteria
 array = sortrows( array, 8 );
 
@@ -99,8 +102,8 @@ for k = 1:max_k,
         probe = [ DIR_HAM filesep FILES_HAM(i).name];
         result = presentre( probe , features );
 
-        p_ham = 0.7;
-        p_spam = 0.3;
+        p_ham = P_HAM_INITIAL;
+        p_spam = P_SPAM_INITIAL;
         
         for j = 1:num_features
             if ~result( j )
@@ -121,8 +124,8 @@ for k = 1:max_k,
         probe = [ DIR_SPAM filesep FILES_SPAM(i).name];
         result = presentre( probe , features );
         
-        p_ham = 0.7;
-        p_spam = 0.3;
+        p_ham = P_HAM_INITIAL;
+        p_spam = P_SPAM_INITIAL;
         
         for j = 1:num_features
             if ~result( j )
