@@ -65,4 +65,8 @@ end
 
 %%
 
+p_ham = 1.0;
+p_spam = 1.0;
+
+features = cell();
 

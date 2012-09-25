@@ -10,7 +10,7 @@
 %    Returns:
 %       PRESENT - an array with ones for the regexp that are present
 
-function PRESENT = countre(FILE, RE)
+function PRESENT = presentre(FILE, RE)
   N=size(RE,2);
 
   PRESENT = zeros(1,N);
@@ -18,7 +18,7 @@ function PRESENT = countre(FILE, RE)
 
   for i = 1:N                   
     if regexp(text{1},RE{i},'ignorecase')
-      PRESENT(i) = 1;
+      PRESENT(i) = 1; 
     end
   end
 end
