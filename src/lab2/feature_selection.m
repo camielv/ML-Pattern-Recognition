@@ -68,5 +68,18 @@ end
 p_ham = 1.0;
 p_spam = 1.0;
 
-features = cell();
+features = words;
+probe = 'File';
+
+result = presentre( probe ,features );
+
+for i = 1:num_features
+    word_index = index.( feature(i) );
+    
+    if ~result( i )
+        continue
+    end
+    p_spam = p_spam + array{word_index,5};
+    p_ham = p_ham + array{word_index,6};
+end
 
