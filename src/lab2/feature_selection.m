@@ -73,7 +73,7 @@ end
 
 %% Feature selection
 % k amount of features
-k = 10;
+k = 250;
 
 % Sort to selection criteria
 array = sortrows( array, 8 );
@@ -81,13 +81,14 @@ array = sortrows( array, 8 );
 % Take k best features
 best_features = array( total_distinct_count-k : total_distinct_count, : );    
 
-features = [];
+% Fill array with best features
+features = cell( 1, k );
 for i = 1:k,
-    word = best_features(i,1);
-    features(i) = word{i};
+    word = best_features{i,1};
+    features(1, i) = word(1);  
 end
     
-%% Initialize
+%% Naive Bayes
 p_ham        = log(0.7);
 p_spam       = log(0.3);
 num_features = size( features, 1 );
@@ -100,7 +101,6 @@ SIZE_SPAM    = size( FILES_SPAM, 1 );
 
 C = zeros(2,2);
 
-%% HAM
 for i = 3:SIZE_HAM
     probe = [ DIR_HAM '/' FILES_HAM(i).name];
     result = presentre( probe , features );
@@ -109,8 +109,8 @@ for i = 3:SIZE_HAM
         if ~result( j )
             continue
         end
-        p_spam = p_spam + array{word_index,5};
-        p_ham = p_ham + array{word_index,6};    
+        p_spam = p_spam + best_features{j, 5};
+        p_ham = p_ham + best_features{j, 6};    
     end
     
     if p_ham > p_spam
@@ -120,7 +120,6 @@ for i = 3:SIZE_HAM
     end
 end
 
-%% SPAM
 for i = 3:SIZE_SPAM
     probe = [ DIR_SPAM '/' FILES_SPAM(i).name];
     result = presentre( probe , features );
@@ -129,8 +128,8 @@ for i = 3:SIZE_SPAM
         if ~result( j )
             continue
         end
-        p_spam = p_spam + array{word_index,5};
-        p_ham = p_ham + array{word_index,6};    
+        p_spam = p_spam + best_features{j,5};
+        p_ham = p_ham + best_features{j,6};    
     end
     
     if  p_spam > p_ham
