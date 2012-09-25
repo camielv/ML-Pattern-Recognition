@@ -15,6 +15,9 @@ total = merge_ws( spam_train_words, ham_train_words );
 %% New struct containing all data.
 words = fields( total );
 
+% Lambda
+lambda = 1;
+
 % Total word count per set
 ham_train_count = 0;
 spam_train_count = 0;
@@ -38,22 +41,22 @@ for i = 1:total_distinct_count,
     array{i,1} = word;
     array{i,2} = total.( word{1,1} );
     if isfield( spam_train_words, word{1,1} ) == 1
-        array{i,3} = spam_train_words.( word{1,1} );
+        array{i,3} = spam_train_words.( word{1,1} ) + lambda;
     else
-        array{i,3} = 0;
+        array{i,3} = lambda;
     end
     spam_train_count = spam_train_count + array{i,3};
     
     if isfield( ham_train_words, word{1,1} ) == 1
-        array{i,4} = ham_train_words.( word{1,1} );
+        array{i,4} = ham_train_words.( word{1,1} ) + lambda;
     else
-        array{i,4} = 0;
+        array{i,4} = lambda;
     end
     ham_train_count = ham_train_count + array{i,4};
 end
 
 % Total words in both sets.
-total_train_count = spam_train_count + ham_train_count;
+total_train_count = spam_train_count + ham_train_count + total_distinct_count * lambda;
 
 % Calculate probabilities
 for i = 1:total_distinct_count,
@@ -71,27 +74,9 @@ for i = 1:total_distinct_count,
     end
 end
 
-%% Feature selection
-% k amount of features
-k = 250;
-
-% Sort to selection criteria
-array = sortrows( array, 8 );
-
-% Take k best features
-best_features = array( total_distinct_count-k : total_distinct_count, : );    
-
-% Fill array with best features
-features = cell( 1, k );
-for i = 1:k,
-    word = best_features{i,1};
-    features(1, i) = word(1);  
-end
-    
-%% Naive Bayes
+%% Init
 p_ham        = log(0.7);
 p_spam       = log(0.3);
-num_features = size( features, 1 );
 DIR_HAM      = strcat( pwd, '/ham/test'  );
 DIR_SPAM     = strcat( pwd, '/spam/test' );
 FILES_HAM    = dir( strcat( pwd, '/ham/test'  ) );
@@ -99,42 +84,74 @@ FILES_SPAM   = dir( strcat( pwd, '/spam/test' ) );
 SIZE_HAM     = size( FILES_HAM,  1 );
 SIZE_SPAM    = size( FILES_SPAM, 1 );
 
-C = zeros(2,2);
+% Sort to selection criteria
+array = sortrows( array, 8 );
 
-for i = 3:SIZE_HAM
-    probe = [ DIR_HAM '/' FILES_HAM(i).name];
-    result = presentre( probe , features );
-    
-    for j = 1:num_features
-        if ~result( j )
-            continue
+
+%% Feature Selection + Bayes
+max_k = 10;
+C_array = cell( max_k, 1 );
+
+for k = 1:max_k,
+    k
+    % Take k best features
+    best_features = array( total_distinct_count-k : total_distinct_count, : );
+
+    % Fill array with best features
+    features = cell( 1, k );
+    num_features = size( features, 1 );
+    for i = 1:k,
+        word = best_features{i,1};
+        features(1, i) = word(1);  
+    end
+
+    % Naive Bayes
+
+    C = zeros(2,2);
+
+    for i = 3:SIZE_HAM
+        probe = [ DIR_HAM '/' FILES_HAM(i).name];
+        result = presentre( probe , features );
+
+        for j = 1:num_features
+            if ~result( j )
+                continue
+            end
+            p_spam = p_spam + best_features{j, 5};
+            p_ham = p_ham + best_features{j, 6};    
         end
-        p_spam = p_spam + best_features{j, 5};
-        p_ham = p_ham + best_features{j, 6};    
+
+        if p_ham > p_spam
+            C(1,1) = C(1,1) + 1;
+        else
+            C(2,1) = C(2,1) + 1;
+        end
     end
-    
-    if p_ham > p_spam
-        C(1,1) = C(1,1) + 1;
-    else
-        C(2,1) = C(2,1) + 1;
+
+    for i = 3:SIZE_SPAM
+        probe = [ DIR_SPAM '/' FILES_SPAM(i).name];
+        result = presentre( probe , features );
+
+        for j = 1:num_features
+            if ~result( j )
+                continue
+            end
+            p_spam = p_spam + best_features{j,5};
+            p_ham = p_ham + best_features{j,6};    
+        end
+
+        if  p_spam > p_ham
+            C(2,2) = C(2,2) + 1;
+        else
+            C(1,2) = C(1,2) + 1;
+        end
     end
+    C_array{k} = C;
 end
 
-for i = 3:SIZE_SPAM
-    probe = [ DIR_SPAM '/' FILES_SPAM(i).name];
-    result = presentre( probe , features );
-    
-    for j = 1:num_features
-        if ~result( j )
-            continue
-        end
-        p_spam = p_spam + best_features{j,5};
-        p_ham = p_ham + best_features{j,6};    
-    end
-    
-    if  p_spam > p_ham
-        C(2,2) = C(2,2) + 1;
-    else
-        C(1,2) = C(1,2) + 1;
-    end
+%% Fill cell to plot
+plot_cell = cell( max_k, 1 );
+for i= 1:max_k,
+    M = C_array{i};
+    plot_cell{i} = M(1,1) + M(2,2);
 end
