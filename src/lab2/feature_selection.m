@@ -63,29 +63,57 @@ for i = 1:total_distinct_count,
     array{i,8} = abs( array{i,5} - array{i,6} );
 end
 
-%%
-
-p_ham = 1.0;
-p_spam = 1.0;
-
-features = words';
-%features = {};
-
-
+%% INIT
+p_ham        = log(0.7);
+p_spam       = log(0.3);
 num_features = size(features,1);
+features     = words';
 
-probe = strcat( pwd, '\spam\test\01' );
+DIR_HAM    = strcat( pwd, '/ham/test'  );
+DIR_SPAM   = strcat( pwd, '/spam/test' );
+FILES_HAM  = dir( strcat( pwd, '/ham/test'  ) );
+FILES_SPAM = dir( strcat( pwd, '/spam/test' ) );
+SIZE_HAM   = size( FILES_HAM,  1 );
+SIZE_SPAM  = size( FILES_SPAM, 1 );
 
-result = presentre( probe , features );
+C = zeros(2,2);
 
-for i = 1:num_features
-    feature = features(i);
-    word_index = index.( features{1} );
+%% HAM
+for i = 3:SIZE_HAM
+    probe = [ DIR_HAM '/' FILES_HAM(i).name];
+    result = presentre( probe , features );
     
-    if ~result( i )
-        continue
+    for i = 1:num_features
+        if ~result( i )
+            continue
+        end
+        p_spam = p_spam + array{word_index,5};
+        p_ham = p_ham + array{word_index,6};    
     end
-    p_spam = p_spam + array{word_index,5};
-    p_ham = p_ham + array{word_index,6};
+    
+    if p_ham > p_spam
+        C(1,1) = C(1,1) + 1;
+    else
+        C(2,1) = C(2,1) + 1;
+    end
 end
 
+%% SPAM
+for i = 3:SIZE_SPAM
+    probe = [ DIR_SPAM '/' FILES_SPAM(i).name];
+    result = presentre( probe , features );
+    
+    for i = 1:num_features
+        if ~result( i )
+            continue
+        end
+        p_spam = p_spam + array{word_index,5};
+        p_ham = p_ham + array{word_index,6};    
+    end
+    
+    if  p_spam > p_ham
+        C(2,2) = C(2,2) + 1;
+    else
+        C(1,2) = C(1,2) + 1;
+    end
+end
