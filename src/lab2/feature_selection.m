@@ -68,13 +68,19 @@ end
 p_ham = 1.0;
 p_spam = 1.0;
 
-features = words;
-probe = 'File';
+features = words';
+%features = {};
 
-result = presentre( probe ,features );
+
+num_features = size(features,1);
+
+probe = strcat( pwd, '\spam\test\01' );
+
+result = presentre( probe , features );
 
 for i = 1:num_features
-    word_index = index.( feature(i) );
+    feature = features(i);
+    word_index = index.( features{1} );
     
     if ~result( i )
         continue
