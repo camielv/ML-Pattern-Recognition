@@ -60,21 +60,43 @@ for i = 1:total_distinct_count,
     array{i,5} = log( array{i,3} / spam_train_count );
     array{i,6} = log( array{i,4} / ham_train_count );
     array{i,7} = log( ( array{i,3} + array{i,4} ) / total_train_count );
-    array{i,8} = abs( array{i,5} - array{i,6} );
+    
+    % Selection value, due to log we get inf probabilities and we map these
+    % values to -inf as they aint good features.
+    selection_value = max( array{i,5} - array{i,6}, array{i,6} - array{i,5} ) + array{i,7};
+    if selection_value ~= inf
+        array{i,8} = selection_value;
+    else
+        array{i,8} = -inf;
+    end
 end
 
-%% INIT
+%% Feature selection
+% k amount of features
+k = 10;
+
+% Sort to selection criteria
+array = sortrows( array, 8 );
+
+% Take k best features
+best_features = array( total_distinct_count-k : total_distinct_count, : );    
+
+features = [];
+for i = 1:k,
+    word = best_features(i,1);
+    features(i) = word{i};
+end
+    
+%% Initialize
 p_ham        = log(0.7);
 p_spam       = log(0.3);
-num_features = size(features,1);
-features     = words';
-
-DIR_HAM    = strcat( pwd, '/ham/test'  );
-DIR_SPAM   = strcat( pwd, '/spam/test' );
-FILES_HAM  = dir( strcat( pwd, '/ham/test'  ) );
-FILES_SPAM = dir( strcat( pwd, '/spam/test' ) );
-SIZE_HAM   = size( FILES_HAM,  1 );
-SIZE_SPAM  = size( FILES_SPAM, 1 );
+num_features = size( features, 1 );
+DIR_HAM      = strcat( pwd, '/ham/test'  );
+DIR_SPAM     = strcat( pwd, '/spam/test' );
+FILES_HAM    = dir( strcat( pwd, '/ham/test'  ) );
+FILES_SPAM   = dir( strcat( pwd, '/spam/test' ) );
+SIZE_HAM     = size( FILES_HAM,  1 );
+SIZE_SPAM    = size( FILES_SPAM, 1 );
 
 C = zeros(2,2);
 
