@@ -80,9 +80,6 @@ C_array = cell( max_k, 1 );
 
 for k = 1:max_k,
     k
-    
-    p_ham  = log(0.7);
-    p_spam = log(0.3);
     % Take k best features
     best_features = array( total_distinct_count-k : total_distinct_count, : );
 
@@ -102,6 +99,9 @@ for k = 1:max_k,
         probe = [ DIR_HAM '/' FILES_HAM(i).name];
         result = presentre( probe , features );
 
+        p_ham = 0.7;
+        p_spam = 0.3;
+        
         for j = 1:num_features
             if ~result( j )
                 continue
@@ -120,7 +120,10 @@ for k = 1:max_k,
     for i = 3:SIZE_SPAM
         probe = [ DIR_SPAM '/' FILES_SPAM(i).name];
         result = presentre( probe , features );
-
+        
+        p_ham = 0.7;
+        p_spam = 0.3;
+        
         for j = 1:num_features
             if ~result( j )
                 continue
