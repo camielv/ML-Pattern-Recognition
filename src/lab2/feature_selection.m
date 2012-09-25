@@ -1,29 +1,28 @@
 %% Loading in train data.
 spam_train_dir = [ pwd filesep 'spam' filesep 'train' filesep ];
-ham_train_dir = [ pwd filesep 'ham' filesep 'train' filesep ];
+ham_train_dir  = [ pwd filesep 'ham'  filesep 'train' filesep ];
 
 % Files from training set
 spam_train_files = dir( spam_train_dir );
-ham_train_files = dir( ham_train_dir );
+ham_train_files  = dir( ham_train_dir );
 
 % Get words
 spam_train_words = countwords( spam_train_dir );
-ham_train_words = countwords( ham_train_dir );
-
-total = merge_ws( spam_train_words, ham_train_words );
+ham_train_words  = countwords( ham_train_dir  );
+total            = merge_ws( spam_train_words, ham_train_words );
 
 %% New struct containing all data.
 words = fields( total );
 
-% Lambda
+% Lambda for Add-lambda smoothing
 lambda = 1;
 
 % Total word count per set
-ham_train_count = 0;
+ham_train_count  = 0;
 spam_train_count = 0;
 
 % Total distinct word count per set
-ham_train_distinct_count = size( fields( ham_train_words ), 1 );
+ham_train_distinct_count  = size( fields( ham_train_words ), 1 );
 spam_train_distinct_count = size( fields( spam_train_words ), 1 );
 
 % Total distinct word count
@@ -31,13 +30,11 @@ total_distinct_count = size( words, 1 );
 
 % Struct with word counts
 array = cell( total_distinct_count, 8 );
-index = struct( total );
 
-% Fill struct with [WORD, WORD_TOTAL_COUNT, WORD_COUNT_IN_SPAM, WORD_COUNT_IN_HAM, P(word) in SPAM, P(word) in ham, abs difference between Probabilities]
+% Fill struct with [WORD, WORD_TOTAL_COUNT, WORD_COUNT_IN_SPAM,
+% WORD_COUNT_IN_HAM, P(F|SPAM), P(F|HAM), P(F), FEATURE VALUE.
 for i = 1:total_distinct_count,
     word = words(i);
-    index.(word{1}) = i;
-    %setfield( index(1), word, i );
     array{i,1} = word;
     array{i,2} = total.( word{1,1} );
     if isfield( spam_train_words, word{1,1} ) == 1
@@ -58,42 +55,34 @@ end
 % Total words in both sets.
 total_train_count = spam_train_count + ham_train_count + total_distinct_count * lambda;
 
-% Calculate probabilities
+% Calculate probabilities and selection values
 for i = 1:total_distinct_count,
     array{i,5} = log( array{i,3} / spam_train_count );
     array{i,6} = log( array{i,4} / ham_train_count );
     array{i,7} = log( ( array{i,3} + array{i,4} ) / total_train_count );
-    
-    % Selection value, due to log we get inf probabilities and we map these
-    % values to -inf as they aint good features.
-    selection_value = max( array{i,5} - array{i,6}, array{i,6} - array{i,5} ) + array{i,7};
-    if selection_value ~= inf
-        array{i,8} = selection_value;
-    else
-        array{i,8} = -inf;
-    end
+    array{i,8} = max( array{i,5} - array{i,6}, array{i,6} - array{i,5} ) + array{i,7};
 end
 
 %% Init
-p_ham        = log(0.7);
-p_spam       = log(0.3);
-DIR_HAM      = strcat( pwd, '/ham/test'  );
-DIR_SPAM     = strcat( pwd, '/spam/test' );
-FILES_HAM    = dir( strcat( pwd, '/ham/test'  ) );
-FILES_SPAM   = dir( strcat( pwd, '/spam/test' ) );
+DIR_HAM      = [ pwd filesep 'ham'  filesep 'test' ];
+DIR_SPAM     = [ pwd filesep 'spam' filesep 'test' ];
+FILES_HAM    = dir( DIR_HAM  );
+FILES_SPAM   = dir( DIR_SPAM );
 SIZE_HAM     = size( FILES_HAM,  1 );
 SIZE_SPAM    = size( FILES_SPAM, 1 );
 
 % Sort to selection criteria
 array = sortrows( array, 8 );
 
-
 %% Feature Selection + Bayes
-max_k = 10;
+max_k = 500;
 C_array = cell( max_k, 1 );
 
 for k = 1:max_k,
     k
+    
+    p_ham  = log(0.7);
+    p_spam = log(0.3);
     % Take k best features
     best_features = array( total_distinct_count-k : total_distinct_count, : );
 
@@ -102,7 +91,7 @@ for k = 1:max_k,
     num_features = size( features, 1 );
     for i = 1:k,
         word = best_features{i,1};
-        features(1, i) = word(1);  
+        features(1, i) = word(1);
     end
 
     % Naive Bayes
