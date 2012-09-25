@@ -1,6 +1,6 @@
 %% Loading in train data.
-spam_train_dir = strcat(pwd, '/spam/train/');
-ham_train_dir = strcat(pwd, '/ham/train/');
+spam_train_dir = strcat( pwd, '\spam\train\');
+ham_train_dir = strcat( pwd, '\ham\train\');
 
 % Files from training set
 spam_train_files = dir( spam_train_dir );
@@ -27,11 +27,14 @@ spam_train_distinct_count = size( fields( spam_train_words ), 1 );
 total_distinct_count = size( words, 1 );
 
 % Struct with word counts
-array = cell( total_count, 4 );
+array = cell( total_distinct_count, 8 );
+index = struct( total );
 
 % Fill struct with [WORD, WORD_TOTAL_COUNT, WORD_COUNT_IN_SPAM, WORD_COUNT_IN_HAM, P(word) in SPAM, P(word) in ham, abs difference between Probabilities]
-for i = 1:total_count,
+for i = 1:total_distinct_count,
     word = words(i);
+    index.(word{1}) = i;
+    %setfield( index(1), word, i );
     array{i,1} = word;
     array{i,2} = total.( word{1,1} );
     if isfield( spam_train_words, word{1,1} ) == 1
@@ -53,9 +56,13 @@ end
 total_train_count = spam_train_count + ham_train_count;
 
 % Calculate probabilities
-for i = 1:total_count,
-    array{i,5} = array{i,3} / spam_train_count;
-    array{i,6} = array{i,4} / ham_train_count;
-    array{i,7} = ( array{i,3} + array{i,4} ) / total_train_count;
+for i = 1:total_distinct_count,
+    array{i,5} = log( array{i,3} / spam_train_count );
+    array{i,6} = log( array{i,4} / ham_train_count );
+    array{i,7} = log( ( array{i,3} + array{i,4} ) / total_train_count );
     array{i,8} = abs( array{i,5} - array{i,6} );
 end
+
+%%
+
+
