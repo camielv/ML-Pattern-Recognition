@@ -56,5 +56,6 @@ total_train_count = spam_train_count + ham_train_count;
 for i = 1:total_count,
     array{i,5} = array{i,3} / spam_train_count;
     array{i,6} = array{i,4} / ham_train_count;
-    array{i,7} = abs( probability{i,1} - probability{i,2} );
+    array{i,7} = ( array{i,3} + array{i,4} ) / total_train_count;
+    array{i,8} = abs( array{i,5} - array{i,6} );
 end
