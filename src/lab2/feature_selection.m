@@ -60,7 +60,7 @@ for i = 1:total_distinct_count
     array{i,5} = log( array{i,3} / spam_train_count );
     array{i,6} = log( array{i,4} / ham_train_count );
     array{i,7} = log( ( array{i,3} + array{i,4} ) / total_train_count );
-    array{i,8} = 1 / ( 1 - abs( array{i,5} - array{i,6} ) );
+    array{i,8} = array{i,7} + (abs( array{i,5} - array{i,6}) )^2;
     if ( array{i,5} > array{i,6} )
         array{i,9} = 'spam_feature';
     else
@@ -80,7 +80,7 @@ P_SPAM_INITIAL = 0.3;
 P_HAM_INITIAL = 0.7;
 
 % Sort to selection criteria
-array = sortrows( array, 8 );
+array = sortrows( array, -8 );
 
 %% Feature Selection + Bayes
 min_k = 50;
