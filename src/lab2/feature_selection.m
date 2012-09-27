@@ -29,14 +29,14 @@ spam_train_distinct_count = size( fields( spam_train_words ), 1 );
 total_distinct_count = size( words, 1 );
 
 % Struct with word counts
-array = cell( total_distinct_count, 8 );
+array = cell( total_distinct_count, 9 );
 
 % Fill struct with [WORD, WORD_TOTAL_COUNT, WORD_COUNT_IN_SPAM,
 % WORD_COUNT_IN_HAM, P(F|SPAM), P(F|HAM), P(F), FEATURE VALUE.
 for i = 1:total_distinct_count,
     word = words(i);
     array{i,1} = word;
-    array{i,2} = total.( word{1,1} );
+    array{i,2} = total.( word{1,1} ) + 2 * lambda;
     if isfield( spam_train_words, word{1,1} ) == 1
         array{i,3} = spam_train_words.( word{1,1} ) + lambda;
     else
@@ -53,14 +53,19 @@ for i = 1:total_distinct_count,
 end
 
 % Total words in both sets.
-total_train_count = spam_train_count + ham_train_count + total_distinct_count * lambda;
+total_train_count = spam_train_count + ham_train_count;
 
 % Calculate probabilities and selection values
-for i = 1:total_distinct_count,
+for i = 1:total_distinct_count
     array{i,5} = log( array{i,3} / spam_train_count );
     array{i,6} = log( array{i,4} / ham_train_count );
     array{i,7} = log( ( array{i,3} + array{i,4} ) / total_train_count );
     array{i,8} = max( array{i,5} - array{i,6}, array{i,6} - array{i,5} ) + array{i,7};
+    if ( array{i,5} > array{i,6} )
+        array{i,9} = 'spam_feature';
+    else
+        array{i,9} = 'ham_feature';
+    end
 end
 
 %% Init
@@ -75,7 +80,7 @@ P_SPAM_INITIAL = 0.3;
 P_HAM_INITIAL = 0.7;
 
 % Sort to selection criteria
-array = sortrows( array, 8 );
+array = sortrows( array, -8 );
 
 %% Feature Selection + Bayes
 max_k = 500;
