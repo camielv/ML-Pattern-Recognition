@@ -69,10 +69,12 @@ for i = 1:total_distinct_count
     
     % Normal function 
     array{i,8} = exp(array{i,7}) * abs( array{i,5} - array{i,6} );
+    
+    % Feature for spam | ham
     if ( array{i,5} > array{i,6} )
-        array{i,9} = 'spam_feature';
+        array{i,9} = 1;
     else
-        array{i,9} = 'ham_feature';
+        array{i,9} = 0;
     end
 end
 
@@ -90,6 +92,22 @@ P_HAM_INITIAL = log(0.2);
 % Sort to selection criteria
 array = sortrows( array, -8 );
 
+%% Sort features to class
+m = 1;
+n = 1;
+
+ham_features = cell( 1, 9 );
+spam_features = cell( 1, 9 );
+
+for i = 1:total_distinct_count,
+    if array{i,9} == 1
+        spam_features(m, :) = array(i, :);
+        m = m+1;
+    else
+        ham_features(n, :) = array(i, :);
+        n = n+1;
+    end
+end
 %% Feature Selection + Bayes
 min_k = 1;
 max_k = 100;
@@ -100,9 +118,11 @@ for k = min_k:k_step:max_k
     k
     % Take k best features
     best_features = array( 1 : k, : );
+    % Take k best features from each class the k best features
+    %best_features = [spam_features( 1 : k, : ); ham_features( 1 : k, : ) ];
 
     % Fill array with best features
-    features = cell( 1, k );
+    features = cell( 1, k );    
     num_features = size( features, 2 );
     for i = 1:k,
         word = best_features{i,1};
