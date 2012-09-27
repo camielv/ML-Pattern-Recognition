@@ -60,7 +60,7 @@ for i = 1:total_distinct_count
     array{i,5} = log( array{i,3} / spam_train_count );
     array{i,6} = log( array{i,4} / ham_train_count );
     array{i,7} = log( ( array{i,3} + array{i,4} ) / total_train_count );
-    array{i,8} = max( array{i,5} - array{i,6}, array{i,6} - array{i,5} ) + array{i,7};
+    array{i,8} = 1 / ( 1 - abs( array{i,5} - array{i,6} ) );
     if ( array{i,5} > array{i,6} )
         array{i,9} = 'spam_feature';
     else
@@ -80,13 +80,15 @@ P_SPAM_INITIAL = 0.3;
 P_HAM_INITIAL = 0.7;
 
 % Sort to selection criteria
-array = sortrows( array, -8 );
+array = sortrows( array, 8 );
 
 %% Feature Selection + Bayes
+min_k = 50;
 max_k = 500;
+k_step = 50;
 C_array = cell( max_k, 1 );
 
-for k = 1:max_k,
+for k = min_k:k_step:max_k
     k
     % Take k best features
     best_features = array( total_distinct_count-k : total_distinct_count, : );
@@ -160,6 +162,6 @@ end
 x = 0:0.05:1;
 y = 0:0.05:1;
 [X,Y] = meshgrid(x,y);
-%Z = 1 ./ ( 1 - abs( X - Y ) );
-Z = abs( X - Y );
+Z = 1 ./ ( 1 - abs( X - Y ) );
+%Z = abs( X - Y );
 surf( X, Y, Z );
