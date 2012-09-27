@@ -60,7 +60,15 @@ for i = 1:total_distinct_count
     array{i,5} = log( array{i,3} / spam_train_count );
     array{i,6} = log( array{i,4} / ham_train_count );
     array{i,7} = log( ( array{i,3} + array{i,4} ) / total_train_count );
-    array{i,8} = array{i,7} + (abs( array{i,5} - array{i,6}) )^2;
+    
+    % Zipf function
+    %array{i,8} = 1.0 / ( total_train_count - abs( array{i,3} - array{i,4}));
+    
+    % Advanced function
+    %array{i,8} = exp(array{i,7}) * (array{i,5} - array{i,6})^2;
+    
+    % Normal function 
+    array{i,8} = exp(array{i,7}) * abs( array{i,5} - array{i,6} );
     if ( array{i,5} > array{i,6} )
         array{i,9} = 'spam_feature';
     else
@@ -76,31 +84,31 @@ FILES_SPAM   = dir( DIR_SPAM );
 SIZE_HAM     = size( FILES_HAM,  1 );
 SIZE_SPAM    = size( FILES_SPAM, 1 );
 
-P_SPAM_INITIAL = 0.3;
-P_HAM_INITIAL = 0.7;
+P_SPAM_INITIAL = log(0.8);
+P_HAM_INITIAL = log(0.2);
 
 % Sort to selection criteria
 array = sortrows( array, -8 );
 
 %% Feature Selection + Bayes
-min_k = 50;
-max_k = 500;
-k_step = 50;
+min_k = 1;
+max_k = 100;
+k_step = 1;
 C_array = cell( max_k, 1 );
 
 for k = min_k:k_step:max_k
     k
     % Take k best features
-    best_features = array( total_distinct_count-k : total_distinct_count, : );
+    best_features = array( 1 : k, : );
 
     % Fill array with best features
     features = cell( 1, k );
-    num_features = size( features, 1 );
+    num_features = size( features, 2 );
     for i = 1:k,
         word = best_features{i,1};
         features(1, i) = word(1);
     end
-
+    
     % Naive Bayes
 
     C = zeros(2,2);
@@ -152,12 +160,21 @@ for k = min_k:k_step:max_k
 end
 
 %% Fill cell to plot
-plot_cell = cell( max_k, 1 );
+plot_cell = cell( max_k, 3 );
 for i= 1:max_k,
-    M = C_array{i};
-    plot_cell{i} = M(1,1) + M(2,2);
+    M = zipf_array{i};
+    plot_cell{i,1} = (M(1,1) + M(2,2))/198.0;
+    
+    M = quadratic_array{i};
+    plot_cell{i,2} = (M(1,1) + M(2,2))/198.0;
+    
+    M = normal_array{i};
+    plot_cell{i,3} = (M(1,1) + M(2,2))/198.0;
 end
 
+plot(cell2mat(plot_cell(1:100,1:3)),'DisplayName','cell2mat(plot_cell(1:100,1:3))','YDataSource','cell2mat(plot_cell(1:100,1:3))');figure(gcf)
+xlabel( 'Number of features' );
+ylabel( 'Accuracy' );
 %%
 x = 0:0.05:1;
 y = 0:0.05:1;
