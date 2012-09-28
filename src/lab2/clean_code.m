@@ -62,18 +62,13 @@ for i = 1:total_distinct_count
     array{i,7} = log( ( array{i,3} + array{i,4} ) / total_train_count );
     
     % Zipf function
-    %array{i,8} = 1.0 / ( total_train_count - abs( array{i,3} - array{i,4}));
+    array{i,8} = 1.0 / ( total_train_count - abs( array{i,3} - array{i,4}));
     
     % Advanced function
-    array{i,8} = exp(array{i,7}) * (array{i,5} - array{i,6})^2;
+    %array{i,8} = exp(array{i,7}) * (array{i,5} - array{i,6})^2;
     
     % Normal function 
     %array{i,8} = exp(array{i,7}) * abs( array{i,5} - array{i,6} );
-    if ( array{i,5} > array{i,6} )
-        array{i,9} = 'spam_feature';
-    else
-        array{i,9} = 'ham_feature';
-    end
 end
 
 %% Init
@@ -84,6 +79,7 @@ FILES_SPAM   = dir( DIR_SPAM );
 SIZE_HAM     = size( FILES_HAM,  1 );
 SIZE_SPAM    = size( FILES_SPAM, 1 );
 
+% Prior probabilities
 P_SPAM_INITIAL = log(0.8);
 P_HAM_INITIAL = log(0.2);
 
@@ -95,15 +91,8 @@ min_k = 1;
 max_k = 100;
 k_step = 1;
 C_array = cell( max_k, 1 );
-test = cell( 2,198 );
-real = cell( 2,198);
-best_X = 0;
-best_Y = 0;
-best_AUC = 0;
 
 for k = min_k:k_step:max_k
-    k
-    teller =1;
     % Take k best features
     best_features = array( 1 : k, : );
 
@@ -139,12 +128,6 @@ for k = min_k:k_step:max_k
         else
             C(2,1) = C(2,1) + 1;
         end
-        
-        test{1,teller} = exp(p_spam);
-        test{2,teller} = exp(p_ham);
-        real{1,teller} = 0;
-        real{2,teller} = 1;
-        teller = teller + 1;
     end
 
     for i = 3:SIZE_SPAM
@@ -167,73 +150,6 @@ for k = min_k:k_step:max_k
         else
             C(1,2) = C(1,2) + 1;
         end
-        test{1,teller} = exp(p_spam);
-        test{2,teller} = exp(p_ham);
-        real{1,teller} = 1;
-        real{2,teller} = 0;
-        teller = teller + 1;
     end
     C_array{k} = C;
-    %plotroc(cell2mat(real), cell2mat(test));
-    [X,Y,T,AUC] = perfcurve( cell2mat(real(1,:)), cell2mat(test(1,:)), 1);
-    if AUC > best_AUC
-        best_X = X;
-        best_Y = Y;
-        best_AUC = AUC;
-    end
-    
 end
-
-%%
-plot(best_X,best_Y)
-
-
-%% Fill cell to plot
-
-zipf_cell = cell( max_k, 2 );
-quad_cell = cell( max_k, 2 );
-norm_cell = cell( max_k, 2 );
-
-for i= 1:max_k,
-    M = zipf_array{i};
-    zipf_cell{i,1} = (M(1,1)) / (M(1,1) + M(2,1) );
-    zipf_cell{i,2} = (M(1,2)) / (M(2,2) + M(1,2) );
-    
-    M = quadratic_array{i};
-    quad_cell{i,1} = (M(1,1)) / (M(1,1) + M(2,1) );
-    quad_cell{i,2} = (M(1,2)) / (M(2,2) + M(1,2) );
-    
-    M = normal_array{i};
-    norm_cell{i,1} = (M(1,1)) / (M(1,1) + M(2,1) );
-    norm_cell{i,2} = (M(1,2)) / (M(2,2) + M(1,2) );
-end
-
-zipf_cell = sortrows( norm_cell, 1 );
-quad_cell = sortrows( norm_cell, 1 );
-norm_cell = sortrows( norm_cell, 1 );
-
-X1 = cell2mat(zipf_cell(:,2));
-X2 = cell2mat(quad_cell(:,2));
-X3 = cell2mat(norm_cell(:,2));
-
-Y1 = cell2mat(zipf_cell(:,1));
-Y2 = cell2mat(quad_cell(:,1));
-Y3 = cell2mat(norm_cell(:,1));
-%%
-plot( X1, Y1 );
-plot( X2, Y2 ); 
-plot( X3, Y3 );
-%%
-plotroc(  )
-
-%%
-x = 0:0.05:1;
-y = 0:0.05:1;
-[X,Y] = meshgrid(x,y);
-Z = 1 ./ ( 1 - abs( X - Y ) );
-%Z = abs( X - Y );
-%Z = abs( X - Y ).^2;
-surf( X, Y, Z );
-xlabel( '$P(f|C_1)$' );
-ylabel( '$P(f|C_2)$' );
-zlabel( 'Rank value' );
