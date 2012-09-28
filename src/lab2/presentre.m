@@ -16,8 +16,9 @@ function PRESENT = presentre(FILE, RE)
   PRESENT = zeros(1,N);
   text = textread(FILE, '%s','whitespace','','bufsize',65536);
 
-  for i = 1:N                   
-    if regexp(text{1},RE{i},'ignorecase')
+  for i = 1:N
+    regex = RE{i}; %['^' RE{i} '$']
+    if regexp(text{1},regex,'ignorecase')
       PRESENT(i) = 1; 
     end
   end

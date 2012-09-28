@@ -60,7 +60,15 @@ for i = 1:total_distinct_count
     array{i,5} = log( array{i,3} / spam_train_count );
     array{i,6} = log( array{i,4} / ham_train_count );
     array{i,7} = log( ( array{i,3} + array{i,4} ) / total_train_count );
-    array{i,8} = 1 / ( array{i,2} + abs( array{i,5} - array{i,6} ) );
+    
+    % Zipf function
+    array{i,8} = 1.0 / ( total_train_count - abs( array{i,3} - array{i,4}));
+    
+    % Advanced function
+    %array{i,8} = exp(array{i,7}) * (array{i,5} - array{i,6})^2;
+    
+    % Normal function 
+    %array{i,8} = exp(array{i,7}) * abs( array{i,5} - array{i,6} );
     if ( array{i,5} > array{i,6} )
         array{i,9} = 'spam_feature';
     else
@@ -76,29 +84,37 @@ FILES_SPAM   = dir( DIR_SPAM );
 SIZE_HAM     = size( FILES_HAM,  1 );
 SIZE_SPAM    = size( FILES_SPAM, 1 );
 
-P_SPAM_INITIAL = 0.3;
-P_HAM_INITIAL = 0.7;
+P_SPAM_INITIAL = log(0.8);
+P_HAM_INITIAL = log(0.2);
 
 % Sort to selection criteria
-array = sortrows( array, 8 );
+array = sortrows( array, -8 );
 
 %% Feature Selection + Bayes
-max_k = 500;
+min_k = 1;
+max_k = 100;
+k_step = 1;
 C_array = cell( max_k, 1 );
+test = cell( 2,198 );
+real = cell( 2,198);
+best_X = 0;
+best_Y = 0;
+best_AUC = 0;
 
-for k = 1:max_k,
+for k = min_k:k_step:max_k
     k
+    teller =1;
     % Take k best features
-    best_features = array( total_distinct_count-k : total_distinct_count, : );
+    best_features = array( 1 : k, : );
 
     % Fill array with best features
     features = cell( 1, k );
-    num_features = size( features, 1 );
+    num_features = size( features, 2 );
     for i = 1:k,
         word = best_features{i,1};
         features(1, i) = word(1);
     end
-
+    
     % Naive Bayes
 
     C = zeros(2,2);
@@ -123,6 +139,12 @@ for k = 1:max_k,
         else
             C(2,1) = C(2,1) + 1;
         end
+        
+        test{1,teller} = exp(p_spam);
+        test{2,teller} = exp(p_ham);
+        real{1,teller} = 0;
+        real{2,teller} = 1;
+        teller = teller + 1;
     end
 
     for i = 3:SIZE_SPAM
@@ -139,22 +161,73 @@ for k = 1:max_k,
             p_spam = p_spam + best_features{j,5};
             p_ham = p_ham + best_features{j,6};    
         end
-
+        
         if  p_spam > p_ham
             C(2,2) = C(2,2) + 1;
         else
             C(1,2) = C(1,2) + 1;
         end
+        test{1,teller} = exp(p_spam);
+        test{2,teller} = exp(p_ham);
+        real{1,teller} = 1;
+        real{2,teller} = 0;
+        teller = teller + 1;
     end
     C_array{k} = C;
+    [X,Y,T,AUC] = perfcurve( cell2mat(real(1,:)), cell2mat(test(1,:)), 1);
+
+    if AUC > best_AUC
+        best_X = X;
+        best_Y = Y;
+        best_AUC = AUC;
+    end
+    
 end
 
+
+%%
+hold on
+plot( [0, 1], [0, 1], 'LineStyle', ':', 'Color', 'black'  )
+plot( zipf_best_X, zipf_best_Y, quad_best_X,quad_best_Y, norm_best_X, norm_best_Y );
+[ zipf_best_AUC quad_best_AUC norm_best_AUC ]
+hold off
 %% Fill cell to plot
-plot_cell = cell( max_k, 1 );
+
+zipf_cell = cell( max_k, 2 );
+quad_cell = cell( max_k, 2 );
+norm_cell = cell( max_k, 2 );
+
 for i= 1:max_k,
-    M = C_array{i};
-    plot_cell{i} = M(1,1) + M(2,2);
+    M = zipf_array{i};
+    zipf_cell{i,1} = (M(1,1)) / (M(1,1) + M(2,1) );
+    zipf_cell{i,2} = (M(1,2)) / (M(2,2) + M(1,2) );
+    
+    M = quadratic_array{i};
+    quad_cell{i,1} = (M(1,1)) / (M(1,1) + M(2,1) );
+    quad_cell{i,2} = (M(1,2)) / (M(2,2) + M(1,2) );
+    
+    M = normal_array{i};
+    norm_cell{i,1} = (M(1,1)) / (M(1,1) + M(2,1) );
+    norm_cell{i,2} = (M(1,2)) / (M(2,2) + M(1,2) );
 end
+
+zipf_cell = sortrows( norm_cell, 1 );
+quad_cell = sortrows( norm_cell, 1 );
+norm_cell = sortrows( norm_cell, 1 );
+
+X1 = cell2mat(zipf_cell(:,2));
+X2 = cell2mat(quad_cell(:,2));
+X3 = cell2mat(norm_cell(:,2));
+
+Y1 = cell2mat(zipf_cell(:,1));
+Y2 = cell2mat(quad_cell(:,1));
+Y3 = cell2mat(norm_cell(:,1));
+%%
+plot( X1, Y1 );
+plot( X2, Y2 ); 
+plot( X3, Y3 );
+%%
+plotroc(  )
 
 %%
 x = 0:0.05:1;
@@ -162,4 +235,8 @@ y = 0:0.05:1;
 [X,Y] = meshgrid(x,y);
 Z = 1 ./ ( 1 - abs( X - Y ) );
 %Z = abs( X - Y );
+%Z = abs( X - Y ).^2;
 surf( X, Y, Z );
+xlabel( '$P(f|C_1)$' );
+ylabel( '$P(f|C_2)$' );
+zlabel( 'Rank value' );
