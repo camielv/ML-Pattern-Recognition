@@ -11,5 +11,10 @@
 %   X - the data,
 %   MOG -  the current parameter values. 
 function [Q LL] = mog_E_step( X, MOG )
-Q = [ 0 0 ; 0 0 ];
+
+Q = zeros( size( X, 1 ), size( MOG, 1 ) );
+for i = 1:size(MOG,1)
+    Q(:,i) = mvnpdf( X, MOG{i}.MU, MOG{i}.SIGMA ) * MOG{i}.W;
+end
+
 LL = 0;
