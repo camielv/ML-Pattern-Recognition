@@ -13,8 +13,13 @@
 function [Q LL] = mog_E_step( X, MOG )
 
 Q = zeros( size( X, 1 ), size( MOG, 1 ) );
+LL = 0;
+
 for i = 1:size(MOG,1)
+    
     Q(:,i) = mvnpdf( X, MOG{i}.MU, MOG{i}.SIGMA ) * MOG{i}.W;
+    
+    LL = LL + sum( log( Q(:,i) ) );
 end
 
-LL = 0;
+end

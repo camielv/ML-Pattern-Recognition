@@ -12,8 +12,6 @@ MOG = cell(C,1);
 min_mu = min( X );
 max_mu = max( X );
 
-
-
 for i = 1:C
     MOG{i} = struct( 'MU', random( 'Uniform', min_mu, max_mu ), ...
                      'SIGMA', eye( size( X, 2 ) ), ...

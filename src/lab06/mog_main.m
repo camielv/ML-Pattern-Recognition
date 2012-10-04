@@ -40,5 +40,5 @@ C(2,2) = sum( P );
 C(2,1) = size( banana.B,1 ) - sum(P);
 
 %% 
-data = [banana.A; banana.B];
-em_mog( data, 2, 2 )
+data = [banana.B];
+em_mog( data, 3, 2 )
