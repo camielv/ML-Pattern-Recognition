@@ -9,19 +9,20 @@
 %   Q - The corresponding responsibilities
 %   MOG - The current parameter values. 
 function MOG = mog_M_step( X, Q, MOG )
+    % Loop over every component
+    for i = 1:size( MOG, 1)
+        % Calculate some values beforehand, for speed and readability
+        sQ = sum( Q(:,i) );
+        rQ = repmat( Q(:,i), 1, size( X, 2 ) );
+        rMU = repmat( MOG{i}.MU, size( X, 1 ), 1 );
 
-for i = 1:size( MOG, 1)
-    sQ = sum( Q(:,i) );
-    rQ = repmat( Q(:,i), 1, size( X, 2 ) );
-    rMU = repmat( MOG{i}.MU, size( X, 1 ), 1 );
-    
-    MOG{i}.MU = sum( rQ .* X / sQ );
-    
-    SIGMA = ( ( rQ .* ( X - rMU ) )' * ( X - rMU ) ) / sQ;
-    
-    if cond( SIGMA ) < 10^10
-        MOG{i}.SIGMA = SIGMA;
+        % Update mu
+        MOG{i}.MU = sum( rQ .* X / sQ );
+
+        % Update sigma
+        MOG{i}.SIGMA = ( ( rQ .* ( X - rMU ) )' * ( X - rMU ) ) / sQ;
+
+        % Update weight
+        MOG{i}.W = sQ;   
     end
-    
-    MOG{i}.W = sQ;   
 end

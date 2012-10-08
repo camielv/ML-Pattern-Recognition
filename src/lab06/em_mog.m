@@ -33,15 +33,18 @@ if verbose>1
     plot_gauss(mog{i}.MU,mog{i}.SIGMA);
   end
   hold off
-  drawnow;        
+  drawnow;
+  %pause
 end
+LogL = zeros(max_iters,1);
+
 for iter=1:max_iters; % EM loops          
   [Q, LL]     = mog_E_step(X,mog);        % E-step
   LogL(iter)  = LL;
   mog         = mog_M_step(X,Q,mog);      % M-step
   
   if iter > 1
-    rel_change = (LogL(end)-LogL(end-1)) / abs(mean(LogL(end-1:end)));
+    rel_change = (LogL(iter)-LogL(iter-1)) / abs(mean(LogL(iter-1:iter)));
 
     if rel_change < 0
       fprintf('Log likelihood decreased in iteration %d\n',iter)
@@ -57,7 +60,7 @@ for iter=1:max_iters; % EM loops
         plot_gauss(mog{i}.MU,mog{i}.SIGMA);
       end
       drawnow
-      hold off              
+      hold off
     end
     if ~isfinite(rel_change) | ((rel_change < epsilon) & (iter > min_iters))
       break

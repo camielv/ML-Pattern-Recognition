@@ -11,15 +11,15 @@
 %   X - the data,
 %   MOG -  the current parameter values. 
 function [Q LL] = mog_E_step( X, MOG )
-
-Q = zeros( size( X, 1 ), size( MOG, 1 ) );
-LL = 0;
-
-for i = 1:size(MOG,1)
+    % Initialize Q
+    Q = zeros( size( X, 1 ), size( MOG, 1 ) );
     
-    Q(:,i) = mvnpdf( X, MOG{i}.MU, MOG{i}.SIGMA ) * MOG{i}.W;
-    
-    LL = LL + sum( log( Q(:,i) ) );
-end
+    % Loop over all components
+    for k = 1:size(MOG,1)
+        Q(:,k) = mvnpdf( X, MOG{k}.MU, MOG{k}.SIGMA ) * MOG{k}.W;
+    end
 
+    % Normalize and calculate log-likelihood
+    Q = Q ./ repmat( sum( Q,2 ), 1, size(MOG,1) );
+    LL = sum( log( sum( Q ) ) );
 end
