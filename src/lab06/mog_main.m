@@ -41,11 +41,27 @@ C(2,1) = size( banana.B,1 ) - sum(P);
 
 %% 
 data = [banana.A];
-em_mog( data, 2, 2 )
+[LL, MOG] = em_mog( data, 6, 2 );
 
+%% Plot 3D
+x = 0:0.02:1;
+y = -1:0.02:1;
+X = repmat(x',size(y,2), 1);
+Y = reshape( repmat(y,size(x,2),1), size(x,2) * size(y,2), 1);
 
-%%
-data = [0, 0; 1, 1];
-[LL, mog] = em_mog( data, 1, 2 );
+Z = zeros( size(x,2) * size(y,2), 1 );
 
+for k = 1:size(MOG,1)
+    Z = Z + mvnpdf( [X Y], MOG{k}.MU, MOG{k}.SIGMA ) * MOG{k}.W;
+end
 
+Z = Z / sum(sum(Z));
+Z = reshape( Z, size(x,2), size(y,2) );
+[X,Y] = meshgrid( x, y );
+
+surf( X', Y', Z );
+
+xlabel('x');
+ylabel('y');
+
+axis([0 1 -1 1 0 max(Z)] );
