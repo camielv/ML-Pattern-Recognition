@@ -68,7 +68,8 @@ Z = reshape( Z, size(x,2), size(y,2) );
 
 surf( X', Y', Z );
 
-xlabel('x');
-ylabel('y');
+xlabel('$x_1$', 'Interpreter', 'latex' );
+ylabel('$x_2$', 'Interpreter', 'latex' );
+zlabel('$P(\textbf{x})$', 'Interpreter', 'latex' );
 
-axis([0 1 -1 1 0 max(Z)] );
+axis([0 1 -1 1 0 max(max(Z))] );
