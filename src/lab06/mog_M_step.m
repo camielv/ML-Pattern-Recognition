@@ -20,8 +20,12 @@ function MOG = mog_M_step( X, Q, MOG )
         MOG{i}.MU = sum( rQ .* X / sQ );
 
         % Update sigma
-        MOG{i}.SIGMA = ( ( rQ .* ( X - rMU ) )' * ( X - rMU ) ) / sQ;
-
+        SIGMA = ( ( rQ .* ( X - rMU ) )' * ( X - rMU ) ) / sQ;
+            
+        if cond(SIGMA) < 10^10
+            MOG{i}.SIGMA = SIGMA;
+        end
+        
         % Update weight
         MOG{i}.W = sQ;   
     end
