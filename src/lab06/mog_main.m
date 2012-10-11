@@ -48,7 +48,7 @@ C(2,1) = size( test.B,1 ) - sum(P);
 
 %% 
 data = [banana.A];
-[LL, MOG] = em_mog( data, 6, 2 );
+[LL, MOG] = em_mog( data, 3, 2 );
 
 %% Plot 3D
 x = 0:0.02:1;

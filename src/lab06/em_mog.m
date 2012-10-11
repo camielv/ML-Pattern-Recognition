@@ -39,7 +39,7 @@ end
 LogL = zeros(max_iters,1);
 
 for iter=1:max_iters; % EM loops          
-  [Q, LL]     = mog_E_step(X,mog);        % E-step
+  [Q, LL]     = mog_E_step_log(X,mog);        % E-step
   LogL(iter)  = LL;
   mog         = mog_M_step(X,Q,mog);      % M-step
   
