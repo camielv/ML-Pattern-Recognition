@@ -73,6 +73,11 @@ legend1 = legend( 'show' );
 set( legend1, 'Interpreter', 'latex' );
 
 %% Assignment 2
-chirps = load( 'chirps.mat' );
-X = chirps.chirps(:, 1); % Training inputs
-t = chirps.chirps(:, 2); % Training targets
+ratio    = 0.6;
+dataset  = load( 'chirps.mat' );
+length   = size(dataset.chirps, 1);
+training = dataset.chirps( 1:round( ratio * length ), : );
+test     = dataset.chirps( round( ratio * length )+1:end, : );
+
+X = training(:, 1); % Training inputs
+t = training(:, 2); % Training targets
