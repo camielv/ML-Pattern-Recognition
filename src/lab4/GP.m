@@ -1,4 +1,5 @@
 %% Contour plot of distribution
+figure;
 mu    = [0,0];
 sigma = [1,0;0,3];
 
@@ -19,22 +20,24 @@ ylabel( '$P(x_1)$', 'interpreter', 'latex' );
 subplot( 3,1,3 )
 x2 = -3: 1 : 3;
 num = size(x2,2);
-str = cell( num, 1 );
+lambda = inv( sigma );
+
+henk = lambda(1,2) * ( X(2,:) - mu(2) ) / lambda(1,1);
 
 hold all;
 for i = 1:num
-    data3 = mvnpdf( [ X(1,:)', repmat( x2(i), size(X,1), 1 )  ], mu, sigma );
+    data3 = mvnpdf( X(1,:)', mu(1) - lambda(1,2) * ( x2(i) - mu(2) ) / lambda(1,1), lambda(1,1)  );
     plot( data3, 'DisplayName', sprintf( '$x_2 = %d$', x2(i) ) );
 end
-
 hold off;
+
 xlabel( '$x_1$', 'interpreter', 'latex' );
 ylabel( '$P(x_1|x_2)$', 'interpreter', 'latex' );
 legend1 = legend( 'show' );
-
 set( legend1, 'Interpreter', 'latex' );
 
 %% 3d plot of other distribution
+figure;
 mu    = [0,0];
 sigma = [1, 0.7; 0.7, 1];
 
@@ -54,18 +57,20 @@ ylabel( '$P(x_1)$', 'interpreter', 'latex' );
 
 subplot( 3,1,3 )
 x2 = -3: 1 : 3;
-cc = hsv(size(x2,2));
+num = size(x2,2);
+lambda = inv( sigma );
 
-hold all
-for i = 1:size(x2,2)
-    data3 = mvnpdf( [ X(1,:)', repmat( x2(i), size(X,1), 1 )  ], mu, sigma );
-    plot( data3 ); %, 'color', cc(i,:) )
+hold all;
+for i = 1:num
+    data3 = mvnpdf( X(1,:)', mu(1) - lambda(1,2) * ( x2(i) - mu(2) ) / lambda(1,1), lambda(1,1)  );
+    plot( data3, 'DisplayName', sprintf( '$x_2 = %d$', x2(i) ) );
 end
+hold off;
 
 xlabel( '$x_1$', 'interpreter', 'latex' );
 ylabel( '$P(x_1|x_2)$', 'interpreter', 'latex' );
-hold off
-
+legend1 = legend( 'show' );
+set( legend1, 'Interpreter', 'latex' );
 
 %% Assignment 2
 chirps = load( 'chirps.mat' );
