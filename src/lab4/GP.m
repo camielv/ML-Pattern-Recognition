@@ -81,3 +81,17 @@ test     = dataset.chirps( round( ratio * length )+1:end, : );
 
 X = training(:, 1); % Training inputs
 t = training(:, 2); % Training targets
+
+x_star = test(:, 1); % Training inputs
+
+K = zeros( size(X,1) );
+k_star = zeros(size(X,1),1);
+
+for i = 1:size(X,1)
+    k_star(i) = covariance_function(X(i,1),x_star);
+    for j = 1:size(X,1)
+        K(i,j) = covariance_function(X(i,:),X(j,:));
+    end
+end
+noise = 0.001;
+Mu, Sigma, LL = GaussianProcess( X, t,noise, x_star, K, k_star);
