@@ -108,6 +108,10 @@ theta = 100;
 l = 0.1;
 noise = 0.7;
 
+%theta = 100;
+%l = 0.01;
+%noise = 0.01;
+
 for i = 1:size(X,1)
     for j = 1:size(X,1)
         K(i,j) = covariance_function(X(i),X(j), theta, l );
