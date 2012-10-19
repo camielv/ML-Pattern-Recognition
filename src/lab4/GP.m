@@ -79,19 +79,82 @@ length   = size(dataset.chirps, 1);
 training = dataset.chirps( 1:round( ratio * length ), : );
 test     = dataset.chirps( round( ratio * length )+1:end, : );
 
-X = training(:, 1); % Training inputs
-t = training(:, 2); % Training targets
+X = training(:,1);
+t = training(:,2);
 
-x_star = test(:, 1); % Training inputs
+%%
+ratio    = 0.6;
+dataset  = load( 'curve.mat' );
+training = dataset.curvetrain;
+test     = dataset.curvetest;
 
+X = training(:,1);
+t = training(:,2);
+
+%%
+hold on
+scatter( training(:,1), training(:,2) );
+scatter( test(:,1), test(:,2) )
+hold off
+
+xlabel( 'Frequency in Hz', 'interpreter', 'latex' );
+ylabel( 'Temperature in Fahrenheit', 'interpreter', 'latex' );
+
+%%
+figure;
 K = zeros( size(X,1) );
-k_star = zeros(size(X,1),1);
+
+theta = 100;
+l = 0.1;
+noise = 0.7;
 
 for i = 1:size(X,1)
-    k_star(i) = covariance_function(X(i,1),x_star);
     for j = 1:size(X,1)
-        K(i,j) = covariance_function(X(i,:),X(j,:));
+        K(i,j) = covariance_function(X(i),X(j), theta, l );
     end
 end
-noise = 0.001;
-Mu, Sigma, LL = GaussianProcess( X, t,noise, x_star, K, k_star);
+
+
+%range = 12 : 22;
+range = linspace(0,1);
+num = size( range, 2 );
+mu = zeros( 1, num );
+sigma = zeros( 1, num );
+
+for i = 1:num
+    k_star = zeros( size( X,1), 1 );
+    %fprintf('iteration %d\n', i);
+
+    for j = 1:size(X,1)
+        [k_star(j)] = covariance_function( X(j), range(i), theta, l );
+    end
+
+    [Mu, Sigma, LL] = GaussianProcess( X, t, noise, range(i), K, k_star, theta, l);
+    mu(i) = Mu;
+    sigma(i) = Sigma;
+end
+
+upper = mu + sigma;
+lower = mu - sigma;
+
+%x = [range,range];
+%y = [lower,upper];
+%plot( x, y );
+
+xx = [ range, fliplr( range ) ];
+yy = [ lower, fliplr( upper ) ];
+%plot( X, Y)
+patch( xx, yy, [0.5 0.5 0.5], 'DisplayName', 'Gaussian Process prediction' );
+
+hold on
+
+scatter( training(:,1), training(:,2), 'DisplayName', 'Training Set');
+scatter( test(:,1), test(:,2), 'DisplayName', 'Test Set' );
+hold off
+
+legend1 = legend( 'show' );
+set( legend1, 'Location', 'NorthWest' )
+set( legend1, 'Interpreter', 'latex' );
+
+xlabel( 'Frequency in Hz', 'interpreter', 'latex' );
+ylabel( 'Temperature in Fahrenheit', 'interpreter', 'latex' );
