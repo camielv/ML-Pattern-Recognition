@@ -93,30 +93,30 @@ ylabel( 'Temperature in Fahrenheit', 'interpreter', 'latex' );
 %%
 K = zeros( size(X,1) );
 
-
 theta = 1000;
 l = 2000;
+noise = 6;
 
 for i = 1:size(X,1)
     for j = 1:size(X,1)
-        K(i,j) = covariance_function(X(i,:),X(j,:), theta, l );
+        K(i,j) = covariance_function(X(i),X(j), theta, l );
     end
 end
 
-noise = 4;
+
 range = 12 : 22;
 num = size( range, 2 );
 mu = zeros( 1, num );
 sigma = zeros( 1, num );
 
 for i = 1:num
-    k_star = zeros( size( X, 1 ), 1 );
+    k_star = zeros( size( X,1), 1 );
     %fprintf('iteration %d\n', i);
-    
+
     for j = 1:size(X,1)
-        k_star(j) = covariance_function( X(j), range(i), theta, l );
+        [k_star(j)] = covariance_function( X(j), range(i), theta, l );
     end
-        
+
     [Mu, Sigma, LL] = GaussianProcess( X, t, noise, range(i), K, k_star, theta, l);
     mu(i) = Mu;
     sigma(i) = Sigma;
@@ -130,13 +130,11 @@ lower = mu - sigma;
 %y = [lower,upper];
 %plot( x, y );
 
-X = [ range, fliplr( range ) ]
-Y = [ lower, fliplr( upper ) ]
-fill(X,Y,'b');                
+xx = [ range, fliplr( range ) ];
+yy = [ lower, fliplr( upper ) ];
+%plot( X, Y)
+patch( xx, yy, [0.5 0.5 0.5], 'DisplayName', 'Gaussian Process prediction' );
 
-%fill = jbfill( range, upper, lower, [1/12, 1/12, 1/12] );
-%set( fill, 'DisplayName', 'Gaussian Process prediction' )
-%{
 hold on
 
 scatter( training(:,1), training(:,2), 'DisplayName', 'Training Set');
@@ -149,5 +147,3 @@ set( legend1, 'Interpreter', 'latex' );
 
 xlabel( 'Frequency in Hz', 'interpreter', 'latex' );
 ylabel( 'Temperature in Fahrenheit', 'interpreter', 'latex' );
-
-%}
