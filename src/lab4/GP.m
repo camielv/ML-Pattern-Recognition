@@ -88,8 +88,8 @@ dataset  = load( 'curve.mat' );
 training = dataset.curvetrain;
 test     = dataset.curvetest;
 
-X = training(:,1);
-t = training(:,2);
+X = test(:,1)%training(:,1);
+t = test(:,2)%training(:,2);
 
 %%
 hold on
@@ -114,7 +114,7 @@ l = 0.1;
 noise = 0.7;
 
 %theta = 100;
-%l = 0.01;
+%l = 3;
 %noise = 0.01;
 
 for i = 1:size(X,1)
@@ -122,7 +122,6 @@ for i = 1:size(X,1)
         K(i,j) = covariance_function(X(i),X(j), theta, l );
     end
 end
-
 
 %range = 12 : 22;
 range = linspace(0,1);
@@ -134,12 +133,13 @@ sigma = zeros( 1, num );
 L = chol( K + noise * eye(size(K) ), 'lower' );
 alpha = L'\(L\t);
 n = size(X, 1);
-sum = 0;
-for i = 1:n
-    sum = sum + log(L(i,i)) - ( n/2 * log( 2 * pi ) );
-end
-LL = -0.5 * t' * alpha - sum;
+%sum = 0;
+%for i = 1:n
+%    sum = sum + log(L(i,i)) - ( n/2 * log( 2 * pi ) );
+%end
+%LL = -0.5 * t' * alpha - sum;
 %LL = -0.5 * t' * alpha - trace( log( L ) ) - n / 2 * log( 2 * pi )
+%LL = zeros( 1, num );
 
 for i = 1:num
     k_star = zeros( size( X,1), 1 );
@@ -152,7 +152,12 @@ for i = 1:num
     mu(i) = k_star' * alpha;
     v = L\k_star;
     sigma(i) = covariance_function( range(i), range(i), theta, l ) - v'* v;
+    %LL(i) = lmvnpdf( range(i), mu(i), diag( sigma(i) );
+    LL = lmvnpdf( range, mu, diag( sigma ) );
 end
+
+%ll = sum( LL );
+LL
 
 upper = mu + sigma;
 lower = mu - sigma;
@@ -200,11 +205,12 @@ for x = 1:size(l,2)
             L = chol( K + (noise(z) * eye(size(K) )), 'lower' );
             alpha = L'\(L\t);
             n = size(X, 1);
-            sum = 0;
-            for i = 1:n
-                sum = sum + log(L(i,i)) - ( n/2 * log( 2 * pi ) );
-            end
-            LL = -0.5 * t' * alpha - sum;
+            
+            %ssum = 0;
+            %for i = 1:n
+            %    ssum = ssum + log(L(i,i)) - ( n/2 * log( 2 * pi ) );
+            %end
+            %LL = -0.5 * t' * alpha - ssum;
             if LL > high
                 high = LL;
                 para = [x,y,z];
