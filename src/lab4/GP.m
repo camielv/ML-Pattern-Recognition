@@ -100,7 +100,8 @@ hold off
 xlabel( 'Frequency in Hz', 'interpreter', 'latex' );
 ylabel( 'Temperature in Fahrenheit', 'interpreter', 'latex' );
 
-%%
+%% GP
+
 figure;
 K = zeros( size(X,1) );
 
@@ -125,6 +126,12 @@ num = size( range, 2 );
 mu = zeros( 1, num );
 sigma = zeros( 1, num );
 
+% Cholesky
+L = chol( K + noise * eye(size(K) ), 'lower' );
+alpha = L'\(L\t);
+n = size(X, 1);
+LL = -0.5 * t' * alpha - trace( log( L ) ) - n / 2 * log( 2 * pi )
+
 for i = 1:num
     k_star = zeros( size( X,1), 1 );
     %fprintf('iteration %d\n', i);
@@ -133,9 +140,9 @@ for i = 1:num
         [k_star(j)] = covariance_function( X(j), range(i), theta, l );
     end
 
-    [Mu, Sigma, LL] = GaussianProcess( X, t, noise, range(i), K, k_star, theta, l);
-    mu(i) = Mu;
-    sigma(i) = Sigma;
+    mu(i) = k_star' * alpha;
+    v = L\k_star;
+    sigma(i) = covariance_function( range(i), range(i), theta, l ) - v'* v;
 end
 
 upper = mu + sigma;
@@ -162,3 +169,13 @@ set( legend1, 'Interpreter', 'latex' );
 
 xlabel( 'Frequency in Hz', 'interpreter', 'latex' );
 ylabel( 'Temperature in Fahrenheit', 'interpreter', 'latex' );
+
+%% Fitting
+K = zeros( size(X,1) );
+
+noise = linspace(0.001, 1, 100);
+theta = linspace(1, 300, 100);
+l     = linspace(0.01, 10, 100);
+LL    = 0;
+high  = -inf;
+para  = [0, 0, 0];
