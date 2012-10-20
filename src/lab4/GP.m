@@ -83,13 +83,12 @@ X = training(:,1);
 t = training(:,2);
 
 %%
-ratio    = 0.6;
 dataset  = load( 'curve.mat' );
 training = dataset.curvetrain;
 test     = dataset.curvetest;
 
-X = test(:,1)%training(:,1);
-t = test(:,2)%training(:,2);
+X = training(:,1);
+t = training(:,2);
 
 %%
 hold on
@@ -105,13 +104,21 @@ ylabel( 'Temperature in Fahrenheit', 'interpreter', 'latex' );
 figure;
 K = zeros( size(X,1) );
 
+%l = 10;
+%theta = 300;
+%noise = 4;
+
+l     = 0.6155;
+theta = 300;
+noise = 0.01;
+
 %theta = 1;
 %l = 0.1109;
 %noise = 0.0906;
 
-theta = 100;
-l = 0.1;
-noise = 0.7;
+%theta = 100;
+%l = 0.1;
+%noise = 0.7;
 
 %theta = 100;
 %l = 3;
@@ -138,7 +145,7 @@ n = size(X, 1);
 %    sum = sum + log(L(i,i)) - ( n/2 * log( 2 * pi ) );
 %end
 %LL = -0.5 * t' * alpha - sum;
-%LL = -0.5 * t' * alpha - trace( log( L ) ) - n / 2 * log( 2 * pi )
+LL = -0.5 * t' * alpha - trace( log( L ) ) - n / 2 * log( 2 * pi )
 %LL = zeros( 1, num );
 
 for i = 1:num
@@ -153,11 +160,9 @@ for i = 1:num
     v = L\k_star;
     sigma(i) = covariance_function( range(i), range(i), theta, l ) - v'* v;
     %LL(i) = lmvnpdf( range(i), mu(i), diag( sigma(i) );
-    LL = lmvnpdf( range, mu, diag( sigma ) );
+    %LL = lmvnpdf( range, mu, diag( sigma ) );
 end
-
 %ll = sum( LL );
-LL
 
 upper = mu + sigma;
 lower = mu - sigma;
@@ -187,13 +192,14 @@ ylabel( 'Temperature in Fahrenheit', 'interpreter', 'latex' );
 %% Fitting
 K = zeros( size(X,1) );
 
-noise = linspace(0.01, 4,   100);
-theta = linspace(1, 300,    100);
 l     = linspace(0.01, 10,  100);
-high  = -inf;
-para  = [0, 0, 0];
+theta = linspace(1, 300,    100);
+noise = linspace(0.01, 2,   100);
+error = 0;
+target = test(:, 2)';
+min_error  = inf;
+parameters = [0,0,0];
 
-%% Brute force
 for x = 1:size(l,2)
     for y = 1:size(theta,2)
         for i = 1:size(X,1)
@@ -201,20 +207,26 @@ for x = 1:size(l,2)
                 K(i,j) = covariance_function(X(i),X(j), theta(y), l(x) );
             end
         end
+        range = test(:, 1)';
+        num = size( range, 2 );
+        mu = zeros( 1, num );
         for z = 1:size(noise,2)
-            L = chol( K + (noise(z) * eye(size(K) )), 'lower' );
+            L = chol( K + noise(z) * eye(size(K) ), 'lower' );
             alpha = L'\(L\t);
-            n = size(X, 1);
-            
-            %ssum = 0;
-            %for i = 1:n
-            %    ssum = ssum + log(L(i,i)) - ( n/2 * log( 2 * pi ) );
-            %end
-            %LL = -0.5 * t' * alpha - ssum;
-            if LL > high
-                high = LL;
-                para = [x,y,z];
+            for i = 1:num
+                k_star = zeros( size( X,1), 1 );
+                for j = 1:size(X,1)
+                    [k_star(j)] = covariance_function( X(j), range(i), theta(y), l(x) );
+                end
+                mu(i) = k_star' * alpha;
+                error = error + (mu(i) - target(i))^2;
             end
+            if error < min_error
+                fprintf('Error: %f Min Error: %f\n', error, min_error);
+                min_error  = error;
+                parameters = [x,y,z];
+            end
+            error = 0;
         end
     end
 end
