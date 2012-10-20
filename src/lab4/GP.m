@@ -105,13 +105,13 @@ ylabel( 'Temperature in Fahrenheit', 'interpreter', 'latex' );
 figure;
 K = zeros( size(X,1) );
 
-theta = 1;
-l = 0.1109;
-noise = 0.0906;
+%theta = 1;
+%l = 0.1109;
+%noise = 0.0906;
 
-%theta = 100;
-%l = 0.1;
-%noise = 0.7;
+theta = 100;
+l = 0.1;
+noise = 0.7;
 
 %theta = 100;
 %l = 0.01;
@@ -134,7 +134,12 @@ sigma = zeros( 1, num );
 L = chol( K + noise * eye(size(K) ), 'lower' );
 alpha = L'\(L\t);
 n = size(X, 1);
-LL = -0.5 * t' * alpha - trace( log( L ) ) - n / 2 * log( 2 * pi )
+sum = 0;
+for i = 1:n
+    sum = sum + log(L(i,i)) - ( n/2 * log( 2 * pi ) );
+end
+LL = -0.5 * t' * alpha - sum;
+%LL = -0.5 * t' * alpha - trace( log( L ) ) - n / 2 * log( 2 * pi )
 
 for i = 1:num
     k_star = zeros( size( X,1), 1 );
@@ -174,11 +179,6 @@ set( legend1, 'Interpreter', 'latex' );
 xlabel( 'Frequency in Hz', 'interpreter', 'latex' );
 ylabel( 'Temperature in Fahrenheit', 'interpreter', 'latex' );
 
-
-
-
-
-
 %% Fitting
 K = zeros( size(X,1) );
 
@@ -200,7 +200,11 @@ for x = 1:size(l,2)
             L = chol( K + (noise(z) * eye(size(K) )), 'lower' );
             alpha = L'\(L\t);
             n = size(X, 1);
-            LL = -0.5 * t' * alpha - trace( log( L ) ) - n / 2 * log( 2 * pi );
+            sum = 0;
+            for i = 1:n
+                sum = sum + log(L(i,i)) - ( n/2 * log( 2 * pi ) );
+            end
+            LL = -0.5 * t' * alpha - sum;
             if LL > high
                 high = LL;
                 para = [x,y,z];
