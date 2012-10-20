@@ -105,9 +105,13 @@ ylabel( 'Temperature in Fahrenheit', 'interpreter', 'latex' );
 figure;
 K = zeros( size(X,1) );
 
-theta = 100;
-l = 0.1;
-noise = 0.7;
+theta = 1;
+l = 0.1109;
+noise = 0.0906;
+
+%theta = 100;
+%l = 0.1;
+%noise = 0.7;
 
 %theta = 100;
 %l = 0.01;
@@ -170,12 +174,37 @@ set( legend1, 'Interpreter', 'latex' );
 xlabel( 'Frequency in Hz', 'interpreter', 'latex' );
 ylabel( 'Temperature in Fahrenheit', 'interpreter', 'latex' );
 
+
+
+
+
+
 %% Fitting
 K = zeros( size(X,1) );
 
-noise = linspace(0.001, 1, 100);
-theta = linspace(1, 300, 100);
-l     = linspace(0.01, 10, 100);
-LL    = 0;
+noise = linspace(0.01, 4,   100);
+theta = linspace(1, 300,    100);
+l     = linspace(0.01, 10,  100);
 high  = -inf;
 para  = [0, 0, 0];
+
+%% Brute force
+for x = 1:size(l,2)
+    for y = 1:size(theta,2)
+        for i = 1:size(X,1)
+            for j = 1:size(X,1)
+                K(i,j) = covariance_function(X(i),X(j), theta(y), l(x) );
+            end
+        end
+        for z = 1:size(noise,2)
+            L = chol( K + (noise(z) * eye(size(K) )), 'lower' );
+            alpha = L'\(L\t);
+            n = size(X, 1);
+            LL = -0.5 * t' * alpha - trace( log( L ) ) - n / 2 * log( 2 * pi );
+            if LL > high
+                high = LL;
+                para = [x,y,z];
+            end
+        end
+    end
+end
