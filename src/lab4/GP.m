@@ -48,6 +48,7 @@ subplot(3,1,1)
 plot3( X, Y, reshape( Z, size(X,1), size(Y,1) ) );
 xlabel( '$x_1$', 'interpreter', 'latex' );
 ylabel( '$x_2$', 'interpreter', 'latex' );
+zlabel( '$P(x_1,x_2)$', 'interpreter', 'latex' );
 
 subplot(3,1,2)
 data2 = mvnpdf( X(1,:)', mu(1), sigma(1,1) );
@@ -104,25 +105,10 @@ ylabel( 'Temperature in Fahrenheit', 'interpreter', 'latex' );
 figure;
 K = zeros( size(X,1) );
 
-%l = 10;
-%theta = 300;
-%noise = 4;
+theta = 100;
+l = 0.1;
+noise = 0.7;
 
-l     = 0.6155;
-theta = 300;
-noise = 0.01;
-
-%theta = 1;
-%l = 0.1109;
-%noise = 0.0906;
-
-%theta = 100;
-%l = 0.1;
-%noise = 0.7;
-
-%theta = 100;
-%l = 3;
-%noise = 0.01;
 
 for i = 1:size(X,1)
     for j = 1:size(X,1)
@@ -131,7 +117,7 @@ for i = 1:size(X,1)
 end
 
 %range = 12 : 22;
-range = linspace(0,1);
+range = linspace(12,22);
 num = size( range, 2 );
 mu = zeros( 1, num );
 sigma = zeros( 1, num );
@@ -189,6 +175,27 @@ set( legend1, 'Interpreter', 'latex' );
 xlabel( 'Frequency in Hz', 'interpreter', 'latex' );
 ylabel( 'Temperature in Fahrenheit', 'interpreter', 'latex' );
 
+%%
+num = size(test,1);
+err = 0;
+for i = 1:num
+    k_star = zeros( size( X,1), 1 );
+    %fprintf('iteration %d\n', i);
+
+    for j = 1:size(X,1)
+        [k_star(j)] = covariance_function( X(j), test(i,1), theta, l );
+    end
+
+    mu(i) = k_star' * alpha;
+    v = L\k_star;
+    sigma(i) = covariance_function( range(i), test(i,1), theta, l ) - v'* v;
+    %LL(i) = lmvnpdf( range(i), mu(i), diag( sigma(i) );
+    %LL = lmvnpdf( range, mu, diag( sigma ) );
+    err = err + (mu(i) - test(i,2))^2;
+end
+
+err
+
 %% Fitting
 K = zeros( size(X,1) );
 
@@ -224,7 +231,7 @@ for x = 1:size(l,2)
             if error < min_error
                 fprintf('Error: %f Min Error: %f\n', error, min_error);
                 min_error  = error;
-                parameters = [x,y,z];
+                parameters = [ l(x), theta(y), noise(z) ];
             end
             error = 0;
         end
